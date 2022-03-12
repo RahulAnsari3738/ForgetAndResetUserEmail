@@ -76,15 +76,15 @@ class Usercontroller{
             console.log(req.body);
 
             if(!emailID){
-                return res.status(404).json({message:"fill the field", success:true})
+                return res.status(404).json({message:"fill the field", success:false})
             }
             const userForgot=await userModel.findOne({emailID:emailID});
             
             if(!userForgot){
-                return res.status().json({message:"invalid  EmailID ", success:true})
+                return res.status().json({message:"invalid  EmailID ", success:false})
             }
             else{
-              globalData['otp']=Math.floor(Math.random()*99999);
+              globalData['otp']=Math.floor(Math.random()*999999);
                 console.log(globalData);
 
                 mailService(globalData,emailID)
@@ -95,10 +95,45 @@ class Usercontroller{
 
         }catch(e){
             console.log(e);
+            return res.status(500).json({message:e.message, success:false})
+        }
+    }
+    
+    reset =async (req,res)=>{
+        try{
+
+           let oldOtp=JSON.stringify(globalData.otp)
+ 
+            const {emailID,otp,newPassword}=req.body
+            console.log(req.body);
+
+            if(!emailID || !otp || !newPassword){
+                return res.status(400).json({message:"fill the field", success:false})
+            }
+
+            const resetEmail=await userModel.findOne({emailID:emailID})
+
+            if(!resetEmail){
+                return res.status().json({message:"invalid  EmailID ", success:true})
+            }
+
+            else if(emailID===resetEmail.emailID && otp===oldOtp){
+
+               const id = resetEmail._id;
+                const userUpdate =await userModel.findByIdAndUpdate({_id:id},{password:newPassword},{new:true})
+
+                return res.status(200).json({message:"password reset successfully", success:true})
+            }
+            else{
+
+                return res.status(404).json({message:"invalid credentials", success:false})
+            }
+              
+        }catch(e){
+            console.log(e);
             return res.status(500).json({message:e.message, success:true})
         }
     }
-
 
 }
 
