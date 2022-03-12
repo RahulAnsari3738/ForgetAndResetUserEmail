@@ -1,4 +1,6 @@
+const tokenGenerate = require('../middleware/tokenGenerate');
 const userModel=require('../models/user.Schema')
+const tokenGenerator =require('../middleware/tokenGenerate')
 
 
 class Usercontroller{
@@ -6,9 +8,9 @@ class Usercontroller{
     register=async (req,res)=>{
         try{
 
-            const {firstName,lastName,emailID,phoneNo,password}=req.body;
+            const {firstName,lastName,emailID,password}=req.body;
 
-            if(!firstName || !lastName || !emailID || !phoneNo || !password){
+            if(!firstName || !lastName || !emailID  || !password){
 
                 return res.status(400).json({message:"fill the field", success:false})
             }
@@ -20,7 +22,7 @@ class Usercontroller{
 
             else{
 
-                const userInfo=new userModel({firstName,lastName,emailID,phoneNo,password})
+                const userInfo=new userModel({firstName,lastName,emailID,password})
                    
                     const result =await userInfo.save()
                    return res.status(200).json({message:"user register successfully", success:true ,result})
@@ -36,8 +38,28 @@ class Usercontroller{
     login=async (req,res)=>{
         try{
 
-            const{emailID,password}=req.body
+            const{emailID,password}=req.body;
 
+            if(!emailID || !password){
+                return res.status(400).json({message:"fill the field", success:false})
+            }
+
+            const userEmail=await userModel.findOne({emailID:emailID})
+
+            if(!userEmail)
+           
+            {
+                return res.status(404).json({message:"emailID not register", success:false})
+            }
+            else if(userEmail.password!=password){
+                return res.status(404).json({message:"invalid password", success:false})
+            }
+            else{
+
+               const token = tokenGenerator(userEmail);
+                
+                return res.status(200).json({message:"user login successfully", success:true,token})
+            }
 
         }catch(e){
             console.log(e);
