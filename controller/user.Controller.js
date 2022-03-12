@@ -1,7 +1,9 @@
 const tokenGenerate = require('../middleware/tokenGenerate');
 const userModel=require('../models/user.Schema')
 const tokenGenerator =require('../middleware/tokenGenerate')
+const mailService =require('../halper/nodeMailer')
 
+var globalData={ };
 
 class Usercontroller{
 
@@ -64,6 +66,36 @@ class Usercontroller{
         }catch(e){
             console.log(e);
             return res.status(500).json({message:e.message, success:false})
+        }
+    }
+
+
+    forget =async (req,res)=>{
+        try{
+            const {emailID}=req.body;
+            console.log(req.body);
+
+            if(!emailID){
+                return res.status(404).json({message:"fill the field", success:true})
+            }
+            const userForgot=await userModel.findOne({emailID:emailID});
+            
+            if(!userForgot){
+                return res.status().json({message:"invalid  EmailID ", success:true})
+            }
+            else{
+              globalData['otp']=Math.floor(Math.random()*99999);
+                console.log(globalData);
+
+                mailService(globalData,emailID)
+
+                return res.status(200).json({message:"email send seccessfully", success:true})
+
+            }
+
+        }catch(e){
+            console.log(e);
+            return res.status(500).json({message:e.message, success:true})
         }
     }
 

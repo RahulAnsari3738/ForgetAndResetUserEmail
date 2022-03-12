@@ -13,9 +13,11 @@ module.exports=async(req,res,next)=>{
      if(!decoded){
          return res.status(404).json({message:"Your are not Authorize User", success:true})
      }
+
+     next()
  
     }catch(e){
         console.log(e);
-        return res.status(500).json({message:e.message, success:true})
+        return res.status(500).json({message:"not found token", success:true})
     }
 }
