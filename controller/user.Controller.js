@@ -69,6 +69,43 @@ class Usercontroller{
         }
     }
 
+    
+    update = async (req,res)=>{
+
+        try{
+
+            const {emailID ,newPassword}=req.body;
+            if(!emailID || !newPassword){
+
+                return res.status(400).json({message:"fill the field", success:true})
+
+            }
+
+            const userUpdate=await userModel.findOne({emailID:emailID})
+
+            if(!userUpdate){
+
+
+                return res.status(404).json({message:"not email found", success:true})
+            }
+            else if(userUpdate.password===newPassword){
+
+                  return res.status(400).json({message:"you enter the old password", success:true})
+            }
+            else{
+                const id=userUpdate._id;
+
+                const newUpdate=await userModel.findByIdAndUpdate({_id:id},{password:newPassword},{new:true})
+                            return res.status(200).json({message:"user update", success:true})
+            }
+
+        }catch(e){
+            console.log(e);
+            return res.status(500).json({message:e.message, success:true})
+        }
+
+
+    }
 
     forget =async (req,res)=>{
         try{
@@ -81,7 +118,7 @@ class Usercontroller{
             const userForgot=await userModel.findOne({emailID:emailID});
             
             if(!userForgot){
-                return res.status().json({message:"invalid  EmailID ", success:false})
+                return res.status(404).json({message:"invalid  EmailID ", success:false})
             }
             else{
               globalData['otp']=Math.floor(Math.random()*999999);
@@ -114,7 +151,7 @@ class Usercontroller{
             const resetEmail=await userModel.findOne({emailID:emailID})
 
             if(!resetEmail){
-                return res.status().json({message:"invalid  EmailID ", success:true})
+                return res.status().json({message:"invalid  EmailID ", success:false})
             }
 
             else if(emailID===resetEmail.emailID && otp===oldOtp){
@@ -131,7 +168,7 @@ class Usercontroller{
               
         }catch(e){
             console.log(e);
-            return res.status(500).json({message:e.message, success:true})
+            return res.status(500).json({message:e.message, success:false})
         }
     }
 
